@@ -29,8 +29,14 @@ public class BoardController extends MouseAdapter{
             return;
         }
 
+        if(board.getPlayersNumber() == 0){
+            while(board.checkWin() == 0){
+                board.addTokenAlea();
+            }
+        }
+
         //Joue automatiquement si c'est au tour de l'ordinateur
-        if((board.getPlayersNumber() == 1 && board.player == 2) || board.getPlayersNumber() == 0){
+        if((board.getPlayersNumber() == 1 && board.player == 2)){
             board.addTokenAlea();
         }
 
@@ -40,11 +46,13 @@ public class BoardController extends MouseAdapter{
         }
         byte result = board.checkWin();
         display.repaint();
-        if(result == 1 || result == 2){
+        if(result != 0){
+            System.out.println("test");
             over = true;
             JOptionPane.showMessageDialog(display,
                     "Victoire du joueur "+result+" !");
         }
+
 
 
     }
