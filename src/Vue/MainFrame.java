@@ -1,5 +1,6 @@
 package Vue;
 
+import Modele.AIType;
 import Modele.Board;
 import Controleur.BoardController;
 
@@ -54,23 +55,26 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void demarrerPartie(byte nbJoueurs) {
-        // Créer un nouveau plateau
-        Board board = new Board(9,9);
+        // Récupérer le type d'IA
+        String selectedAi = (String) sidebar.CmbAi.getSelectedItem();
+        AIType aiType = "MiniMax".equals(selectedAi) ? AIType.MINIMAX : AIType.RANDOM;
+
+        // Récupérer la profondeur
+        int depth = (Integer) sidebar.depth.getSelectedItem();
+
+        Board board = new Board(9, 9);
         board.setPlayersNumber(nbJoueurs);
 
-        // Créer la vue associée
         BoardDisplay display = new BoardDisplay(board);
 
-        // Remplacer l'ancien contenu du centre par le nouveau plateau
         centerPanel.removeAll();
         centerPanel.add(display, BorderLayout.CENTER);
         centerPanel.revalidate();
         centerPanel.repaint();
 
-        // Attacher le contrôleur de souris
-        new BoardController(board, display);
+        // Passer les paramètres
+        new BoardController(board, display, aiType, depth);
 
-        // Garder une référence pour la sauvegarde/chargement
         currentBoard = board;
         currentDisplay = display;
     }
@@ -94,15 +98,17 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void chargerPartie() {
-        // On crée un nouveau plateau pour éviter de mélanger avec l'ancien
-        Board board = new Board(9,9);
+        String selectedAi = (String) sidebar.CmbAi.getSelectedItem();
+        AIType aiType = "MiniMax".equals(selectedAi) ? AIType.MINIMAX : AIType.RANDOM;
+        int depth = (Integer) sidebar.depth.getSelectedItem();
+
+        Board board = new Board(9, 9);
         try (DataInputStream load = new DataInputStream(new FileInputStream("save.dat"))) {
             for (int r = 0; r < board.row; r++) {
                 for (int c = 0; c < board.col; c++) {
                     board.board[r][c] = load.readByte();
                 }
             }
-            // Important : re-créer l'affichage avec ce plateau chargé
             BoardDisplay display = new BoardDisplay(board);
 
             centerPanel.removeAll();
@@ -110,7 +116,7 @@ public class MainFrame extends JFrame implements ActionListener {
             centerPanel.revalidate();
             centerPanel.repaint();
 
-            new BoardController(board, display);
+            new BoardController(board, display, aiType, depth);
 
             currentBoard = board;
             currentDisplay = display;

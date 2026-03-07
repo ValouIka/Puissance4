@@ -4,16 +4,21 @@ import javax.swing.*;
 import java.awt.event.*;
 import Modele.Board;
 import Vue.BoardDisplay;
+import Modele.AIType;
 
 public class BoardController extends MouseAdapter {
 
     private Board board;
     private BoardDisplay display;
     private boolean over = false;
+    private AIType ai_type;
+    private int depth;
 
-    public BoardController(Board board, BoardDisplay display) {
+    public BoardController(Board board, BoardDisplay display, AIType ai_type, int depth) {
         this.board = board;
         this.display = display;
+        this.ai_type = ai_type;
+        this.depth = depth;
         display.addMouseListener(this);
     }
 
@@ -31,7 +36,7 @@ public class BoardController extends MouseAdapter {
         // Mode 0 joueur : IA contre IA
         if (board.getPlayersNumber() == 0) {
             while (board.checkWin() == 0) {
-                int bestCol = board.getBestMove(6);
+                int bestCol = getAIMove();
                 board.addToken(bestCol);
                 // Après chaque coup, vérifier la victoire
                 byte result = board.checkWin();
@@ -80,7 +85,7 @@ public class BoardController extends MouseAdapter {
     private void jouerTourIA() {
         if (over) return;
 
-        int bestCol = board.getBestMove(8); // profondeur 8, comme dans l'original
+        int bestCol = getAIMove();
         board.addToken(bestCol);
 
         byte result = board.checkWin();
@@ -94,4 +99,12 @@ public class BoardController extends MouseAdapter {
         display.repaint();
     }
 
+    private int getAIMove() {
+        if (ai_type == AIType.MINIMAX) {
+            return board.getBestMove(depth);
+        } else {
+            return board.getRandomMove();
+        }
+    }
 }
+

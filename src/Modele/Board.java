@@ -1,4 +1,6 @@
 package Modele;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Board {
@@ -24,9 +26,16 @@ public class Board {
         }
     }
 
-    public void addTokenAlea(){
-        Random r = new Random();
-        addToken(r.nextInt(col));
+    public int getRandomMove() {
+        List<Integer> available = new ArrayList<>();
+        for (int c = 0; c < col; c++) {
+            if (board[0][c] == 0) { // colonne non pleine
+                available.add(c);
+            }
+        }
+        if (available.isEmpty()) return -1; // match nul
+        Random rand = new Random();
+        return available.get(rand.nextInt(available.size()));
     }
 
     public byte getValue(int r, int c){
