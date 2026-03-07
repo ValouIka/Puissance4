@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.event.*;
 import Modele.Board;
 import Vue.BoardDisplay;
-import Vue.MainMenu;
 
 public class BoardController extends MouseAdapter {
 
@@ -24,7 +23,7 @@ public class BoardController extends MouseAdapter {
             return;
         }
 
-        int col = e.getX() / 100;
+        int col = e.getX() / 75;
         if (col < 0 || col >= board.col) {
             return;
         }
@@ -51,14 +50,9 @@ public class BoardController extends MouseAdapter {
 // Gestion des tours pour 1 ou 2 joueurs
         boolean joueurAJoue = false;
 
-// Cas : ordinateur doit jouer (mode 1 joueur et c'est le tour de l'ordi)
-        if (board.getPlayersNumber() == 1 && board.player == 2) {
-            int bestCol = board.getBestMove(8);
-            board.addToken(bestCol);
-            joueurAJoue = true;
-        }
+
 // Cas : joueur humain peut jouer (mode 2 joueurs, ou mode 1 joueur et c'est le tour de l'humain)
-        else if (board.getPlayersNumber() == 2 || (board.getPlayersNumber() == 1 && board.player == 1)) {
+        if (board.getPlayersNumber() == 2 || (board.getPlayersNumber() == 1 && board.player == 1)) {
             board.addToken(col);
             joueurAJoue = true;
         }
@@ -77,7 +71,27 @@ public class BoardController extends MouseAdapter {
                 JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
             }
         }
+        if (board.getPlayersNumber() == 1 && board.player == 2) {
+            jouerTourIA();
+        }
 
+    }
+
+    private void jouerTourIA() {
+        if (over) return;
+
+        int bestCol = board.getBestMove(8); // profondeur 8, comme dans l'original
+        board.addToken(bestCol);
+
+        byte result = board.checkWin();
+        if (result != 0) {
+            over = true;
+            JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
+        } else {
+            // Après le coup de l'IA, on repasse au joueur humain (ou à l'autre IA si mode 0, mais ici on est en mode 1)
+            board.player = (byte) (board.player == 1 ? 2 : 1);
+        }
+        display.repaint();
     }
 
 }

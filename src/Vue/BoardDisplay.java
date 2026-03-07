@@ -13,7 +13,7 @@ public class BoardDisplay extends JPanel {
 
     public BoardDisplay(Board board) {
         this.board = board;
-        setPreferredSize(new Dimension(100*board.col, 100*board.row));
+        setPreferredSize(new Dimension(75*board.col, 75*board.row));
     }
 
 
@@ -21,7 +21,7 @@ public class BoardDisplay extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        int cell = 100;
+        int cell = 75;
 
         for (int r = 0; r < board.row; r++) {
             for (int c = 0; c < board.col; c++) {
