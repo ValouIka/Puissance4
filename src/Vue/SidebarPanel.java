@@ -14,8 +14,8 @@ public class SidebarPanel extends JPanel {
     public JButton btn2 = new JButton("Partie 2 joueurs");
     public JButton btnLoad = new JButton("Load");
     public JButton btnSave = new JButton("Save");
-    public JComboBox CmbAi = new JComboBox(options);
-    public JComboBox depth = new JComboBox(depthList);
+    public JComboBox<String> CmbAi = new JComboBox<>(options);
+    public JComboBox<Integer> depth = new JComboBox<>(depthList);
 
     public SidebarPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
