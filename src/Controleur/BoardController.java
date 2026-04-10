@@ -13,6 +13,7 @@ public class BoardController extends MouseAdapter {
     private boolean over = false;
     private AIType ai_type;
     private int depth;
+    private byte humanToken = 1;
 
     public BoardController(Board board, BoardDisplay display, AIType ai_type, int depth) {
         this.board = board;
@@ -35,20 +36,23 @@ public class BoardController extends MouseAdapter {
 
         // Mode 0 joueur : IA contre IA
         if (board.getPlayersNumber() == 0) {
+            byte result = 0;
             while (board.checkWin() == 0) {
                 int bestCol = getAIMove();
                 board.addToken(bestCol);
                 // Après chaque coup, vérifier la victoire
-                byte result = board.checkWin();
+                result = board.checkWin();
                 if (result != 0) {
                     over = true;
-                    JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
                     break;
                 }
                 // Changer de joueur manuellement
                 board.player = (byte) (board.player == 1 ? 2 : 1);
             }
             display.repaint();
+            if(over){
+                JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
+            }
             return;
         }
 
@@ -64,6 +68,7 @@ public class BoardController extends MouseAdapter {
 
         if (joueurAJoue) {
             // Vérifier la victoire
+            System.out.println("Doit jouer: "+getAIMove());
             byte result = board.checkWin();
             if (result != 0) {
                 over = true;
@@ -86,17 +91,20 @@ public class BoardController extends MouseAdapter {
         if (over) return;
 
         int bestCol = getAIMove();
+        System.out.println("Doit jouer: "+bestCol);
         board.addToken(bestCol);
 
         byte result = board.checkWin();
         if (result != 0) {
             over = true;
-            JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
         } else {
             // Après le coup de l'IA, on repasse au joueur humain (ou à l'autre IA si mode 0, mais ici on est en mode 1)
             board.player = (byte) (board.player == 1 ? 2 : 1);
         }
         display.repaint();
+        if(over){
+            JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
+        }
     }
 
     private int getAIMove() {

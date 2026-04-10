@@ -16,6 +16,8 @@ public class MainFrame extends JFrame implements ActionListener {
     private JPanel centerPanel;          // contiendra le BoardDisplay
     private Board currentBoard;           // plateau actuellement affiché
     private BoardDisplay currentDisplay;   // vue actuelle
+    private byte currentPlayerNb;
+    private byte currentPlayer;
 
     public MainFrame() {
         setTitle("Puissance 4");
@@ -62,8 +64,10 @@ public class MainFrame extends JFrame implements ActionListener {
         // Récupérer la profondeur
         int depth = (Integer) sidebar.depth.getSelectedItem();
 
+
         Board board = new Board(9, 9);
         board.setPlayersNumber(nbJoueurs);
+        currentPlayerNb = nbJoueurs;
 
         BoardDisplay display = new BoardDisplay(board);
 
@@ -95,6 +99,7 @@ public class MainFrame extends JFrame implements ActionListener {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Erreur lors de la sauvegarde : " + ex.getMessage());
         }
+        currentPlayer = currentBoard.player;
     }
 
     private void chargerPartie() {
@@ -110,6 +115,9 @@ public class MainFrame extends JFrame implements ActionListener {
                 }
             }
             BoardDisplay display = new BoardDisplay(board);
+            board.setPlayersNumber(currentPlayerNb);
+            board.player = currentPlayer;
+
 
             centerPanel.removeAll();
             centerPanel.add(display, BorderLayout.CENTER);
@@ -117,6 +125,7 @@ public class MainFrame extends JFrame implements ActionListener {
             centerPanel.repaint();
 
             new BoardController(board, display, aiType, depth);
+
 
             currentBoard = board;
             currentDisplay = display;
@@ -130,6 +139,6 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainFrame());
+        SwingUtilities.invokeLater(MainFrame::new);
     }
 }
