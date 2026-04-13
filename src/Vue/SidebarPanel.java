@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 
 public class SidebarPanel extends JPanel {
 
+    String[] modes = {"Play", "Paint"};
     String[] options = {"Random", "MiniMax"};
     Integer[] depthList = {1,2,3,4,5,6,7,8,9,10};
 
@@ -14,6 +15,8 @@ public class SidebarPanel extends JPanel {
     public JButton btn2 = new JButton("Partie 2 joueurs");
     public JButton btnLoad = new JButton("Load");
     public JButton btnSave = new JButton("Save");
+    public JButton confirm = new JButton("Change mode");
+    public JComboBox<String> mode = new JComboBox<>(modes);
     public JComboBox<String> CmbAi = new JComboBox<>(options);
     public JComboBox<Integer> depth = new JComboBox<>(depthList);
 
@@ -33,6 +36,10 @@ public class SidebarPanel extends JPanel {
         add(Box.createRigidArea(new Dimension(0, 10)));
         add(btnSave);
         add(Box.createRigidArea(new Dimension(0, 10)));
+        add(mode);
+        add(Box.createRigidArea(new Dimension(0, 10)));
+        add(confirm);
+        add(Box.createRigidArea(new Dimension(0, 10)));
         add(CmbAi);
         add(depth);
         add(Box.createRigidArea(new Dimension(0, 500)));
@@ -45,5 +52,6 @@ public class SidebarPanel extends JPanel {
         btn2.addActionListener(listener);
         btnLoad.addActionListener(listener);
         btnSave.addActionListener(listener);
+        confirm.addActionListener(listener);
     }
 }

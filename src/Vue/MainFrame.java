@@ -53,7 +53,11 @@ public class MainFrame extends JFrame implements ActionListener {
             chargerPartie();
         } else if (source == sidebar.btnSave) {
             sauvegarderPartie();
+        } else if (source == sidebar.confirm){
+            setPaintMode();
+            System.out.println(currentBoard.paint);
         }
+
     }
 
     private void demarrerPartie(byte nbJoueurs) {
@@ -136,6 +140,11 @@ public class MainFrame extends JFrame implements ActionListener {
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Erreur lors du chargement : " + e.getMessage());
         }
+    }
+
+    private void setPaintMode(){
+        String selectedPaintMode = (String) sidebar.mode.getSelectedItem();
+        currentBoard.paint = "Paint".equals(selectedPaintMode);
     }
 
     public static void main(String[] args) {

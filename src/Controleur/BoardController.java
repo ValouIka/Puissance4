@@ -13,7 +13,7 @@ public class BoardController extends MouseAdapter {
     private boolean over = false;
     private AIType ai_type;
     private int depth;
-    private byte humanToken = 1;
+
 
     public BoardController(Board board, BoardDisplay display, AIType ai_type, int depth) {
         this.board = board;
@@ -30,7 +30,23 @@ public class BoardController extends MouseAdapter {
         }
 
         int col = e.getX() / 75;
+        int row = e.getY() / 75;
         if (col < 0 || col >= board.col) {
+            return;
+        }
+
+        //Mode peinture (ne dépend pas d'un type de partie)
+        if(board.paint){
+            if(SwingUtilities.isLeftMouseButton(e)){ //Ajouter un jeton rouge: clic gauche
+                board.addPaintToken(row,col, (byte) 1);
+            }
+            else if(SwingUtilities.isRightMouseButton(e)){ //Jeton jaune: clic droit
+                board.addPaintToken(row,col, (byte) 2);
+            }
+            else if(SwingUtilities.isMiddleMouseButton(e)){ //Effacer: clic molette
+                board.addPaintToken(row,col, (byte) 0);
+            }
+            display.repaint();
             return;
         }
 

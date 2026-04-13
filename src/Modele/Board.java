@@ -9,12 +9,14 @@ public class Board {
     public byte[][] board;
     public byte player;
     public byte playersNumber;
+    public boolean paint;
 
     public Board(int row, int col){
         this.row = row;
         this.col = col;
         board = new byte[row][col];
         this.player = 1;
+        paint = false;
     }
 
     public void addToken(int colNumber) {
@@ -24,6 +26,10 @@ public class Board {
                 break;
             }
         }
+    }
+
+    public void addPaintToken(int rowNumber, int colNumber, byte color){
+        board[rowNumber][colNumber] = color;
     }
 
     public int getRandomMove() {
