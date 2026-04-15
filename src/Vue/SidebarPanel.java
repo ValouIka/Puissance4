@@ -16,6 +16,7 @@ public class SidebarPanel extends JPanel {
     public JButton btnLoad = new JButton("Load");
     public JButton btnSave = new JButton("Save");
     public JButton confirm = new JButton("Change mode");
+    public JButton suggestBtn = new JButton("Suggérer coup");
     public JComboBox<String> mode = new JComboBox<>(modes);
     public JComboBox<String> CmbAi = new JComboBox<>(options);
     public JComboBox<Integer> depth = new JComboBox<>(depthList);
@@ -50,6 +51,8 @@ public class SidebarPanel extends JPanel {
         add(Box.createRigidArea(new Dimension(0, 10)));
         add(confirm);
         add(Box.createRigidArea(new Dimension(0, 20)));
+        add(new JLabel("Aide :"));
+        add(suggestBtn);
 
         // Ajout des radios avec un séparateur
         add(new JLabel("Tour du joueur :"));
@@ -69,6 +72,7 @@ public class SidebarPanel extends JPanel {
         btnLoad.addActionListener(listener);
         btnSave.addActionListener(listener);
         confirm.addActionListener(listener);
+        suggestBtn.addActionListener(listener);
     }
 
     // Ajouter un listener spécifique pour les radios

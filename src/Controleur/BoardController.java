@@ -50,6 +50,7 @@ public class BoardController extends MouseAdapter {
             display.repaint();
             // Mise à jour des radios après un coup en mode peinture (le joueur change manuellement)
             mainFrame.updateRadiosFromBoard();
+            display.clearSuggestion();
             return;
         }
 
@@ -68,6 +69,7 @@ public class BoardController extends MouseAdapter {
             }
             display.repaint();
             mainFrame.updateRadiosFromBoard();
+            display.clearSuggestion();
             if (over) {
                 JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
             }
@@ -92,6 +94,7 @@ public class BoardController extends MouseAdapter {
                 board.player = (byte) (board.player == 1 ? 2 : 1);
             }
             display.repaint();
+            display.clearSuggestion();
             mainFrame.updateRadiosFromBoard();
             if (over) {
                 JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
@@ -121,6 +124,7 @@ public class BoardController extends MouseAdapter {
             board.player = (byte) (board.player == 1 ? 2 : 1);
         }
         display.repaint();
+        display.clearSuggestion();
         mainFrame.updateRadiosFromBoard();
         if (over) {
             JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
@@ -128,6 +132,14 @@ public class BoardController extends MouseAdapter {
     }
 
     private int getAIMove() {
+        if (ai_type == AIType.MINIMAX) {
+            return board.getBestMove(depth);
+        } else {
+            return board.getRandomMove();
+        }
+    }
+
+    public int getSuggestedMove() {
         if (ai_type == AIType.MINIMAX) {
             return board.getBestMove(depth);
         } else {

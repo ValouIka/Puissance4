@@ -80,6 +80,23 @@ public class MainFrame extends JFrame implements ActionListener {
                 }
             }
         }
+
+        if (source == sidebar.suggestBtn) {
+            if (currentBoard != null && currentController != null && !currentBoard.paint) {
+                int col = currentController.getSuggestedMove();
+                if (col >= 0) {
+                    currentDisplay.setSuggestedColumn(col);
+                    // Optionnel : afficher un message avec le numéro de colonne (1-based)
+                    JOptionPane.showMessageDialog(this,
+                            "Coup suggéré : colonne " + (col + 1),
+                            "Suggestion", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Aucun coup valide (plateau plein ?)",
+                            "Suggestion", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        }
     }
 
     private void demarrerPartie(byte nbJoueurs) {
