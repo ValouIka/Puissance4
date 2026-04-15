@@ -28,6 +28,7 @@ public class Board {
         }
     }
 
+
     public void addPaintToken(int rowNumber, int colNumber, byte color){
         board[rowNumber][colNumber] = color;
     }
@@ -299,6 +300,7 @@ public class Board {
             if (this.board[r][center] == player) score++;
         return score;
     }
+
 
 
 

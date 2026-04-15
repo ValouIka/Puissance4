@@ -13,23 +13,22 @@ import java.io.*;
 public class MainFrame extends JFrame implements ActionListener {
 
     private SidebarPanel sidebar;
-    private JPanel centerPanel;          // contiendra le BoardDisplay
-    private Board currentBoard;           // plateau actuellement affiché
-    private BoardDisplay currentDisplay;   // vue actuelle
+    private JPanel centerPanel;
+    private Board currentBoard;
+    private BoardDisplay currentDisplay;
+    private BoardController currentController; // Nouvelle référence
     private byte currentPlayerNb;
-    private byte currentPlayer;
 
     public MainFrame() {
         setTitle("Puissance 4");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Création du menu latéral
         sidebar = new SidebarPanel();
-        sidebar.setButtonListener(this);   // cette classe écoute les boutons
+        sidebar.setButtonListener(this);
+        sidebar.setRadioListener(this); // Écoute les radios
         add(sidebar, BorderLayout.WEST);
 
-        // Panneau central (vide au démarrage)
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(new JLabel("Cliquez sur un mode de jeu pour commencer", SwingConstants.CENTER), BorderLayout.CENTER);
         add(centerPanel, BorderLayout.CENTER);
@@ -41,7 +40,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        JButton source = (JButton) e.getSource();
+        Object source = e.getSource();
 
         if (source == sidebar.btn0) {
             demarrerPartie((byte) 0);
@@ -53,38 +52,60 @@ public class MainFrame extends JFrame implements ActionListener {
             chargerPartie();
         } else if (source == sidebar.btnSave) {
             sauvegarderPartie();
-        } else if (source == sidebar.confirm){
+        } else if (source == sidebar.confirm) {
             setPaintMode();
-            System.out.println(currentBoard.paint);
+        } if (source == sidebar.player1Radio || source == sidebar.player2Radio) {
+            if (currentBoard != null && !currentBoard.paint) {
+                byte newPlayer = (source == sidebar.player1Radio) ? (byte)1 : (byte)2;
+                if (currentBoard.player != newPlayer) {
+                    // Si on est en mode 1 joueur, on change aussi le humanPlayer si l'utilisateur le souhaite
+                    if (currentBoard.getPlayersNumber() == 1) {
+                        // On considère que le joueur sélectionné devient l'humain
+                        currentController.setHumanPlayer(newPlayer);
+                        // Si on passe au joueur IA, on déclenche son tour
+                        if (currentBoard.player != newPlayer) {
+                            currentBoard.player = newPlayer;
+                            updateRadiosFromBoard();
+                            currentDisplay.repaint();
+                            if (currentBoard.player != currentController.humanPlayer) {
+                                currentController.jouerTourIA();
+                            }
+                        }
+                    } else {
+                        // Mode 2 joueurs ou peinture : simple changement de joueur
+                        currentBoard.player = newPlayer;
+                        updateRadiosFromBoard();
+                        currentDisplay.repaint();
+                    }
+                }
+            }
         }
-
     }
 
     private void demarrerPartie(byte nbJoueurs) {
-        // Récupérer le type d'IA
         String selectedAi = (String) sidebar.CmbAi.getSelectedItem();
         AIType aiType = "MiniMax".equals(selectedAi) ? AIType.MINIMAX : AIType.RANDOM;
-
-        // Récupérer la profondeur
         int depth = (Integer) sidebar.depth.getSelectedItem();
-
 
         Board board = new Board(9, 9);
         board.setPlayersNumber(nbJoueurs);
         currentPlayerNb = nbJoueurs;
 
         BoardDisplay display = new BoardDisplay(board);
-
         centerPanel.removeAll();
         centerPanel.add(display, BorderLayout.CENTER);
         centerPanel.revalidate();
         centerPanel.repaint();
 
-        // Passer les paramètres
-        new BoardController(board, display, aiType, depth);
-
+        BoardController controller = new BoardController(board, display, aiType, depth, this);
         currentBoard = board;
         currentDisplay = display;
+        currentController = controller;
+
+        // Activer les radios seulement si le mode le permet (2 joueurs ou peinture)
+        boolean radiosEnabled = (nbJoueurs == 2) || board.paint || (nbJoueurs == 1);
+        sidebar.setRadiosEnabled(radiosEnabled);
+        updateRadiosFromBoard();
     }
 
     private void sauvegarderPartie() {
@@ -103,7 +124,6 @@ public class MainFrame extends JFrame implements ActionListener {
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Erreur lors de la sauvegarde : " + ex.getMessage());
         }
-        currentPlayer = currentBoard.player;
     }
 
     private void chargerPartie() {
@@ -118,21 +138,24 @@ public class MainFrame extends JFrame implements ActionListener {
                     board.board[r][c] = load.readByte();
                 }
             }
-            BoardDisplay display = new BoardDisplay(board);
             board.setPlayersNumber(currentPlayerNb);
-            board.player = currentPlayer;
+            // Le joueur courant n'est pas sauvegardé dans le fichier, on le met à 1 par défaut
+            board.player = 1;
 
-
+            BoardDisplay display = new BoardDisplay(board);
             centerPanel.removeAll();
             centerPanel.add(display, BorderLayout.CENTER);
             centerPanel.revalidate();
             centerPanel.repaint();
 
-            new BoardController(board, display, aiType, depth);
-
-
+            BoardController controller = new BoardController(board, display, aiType, depth, this);
             currentBoard = board;
             currentDisplay = display;
+            currentController = controller;
+
+            boolean radiosEnabled = (currentPlayerNb == 2) || board.paint || (currentPlayerNb == 1);
+            sidebar.setRadiosEnabled(radiosEnabled);
+            updateRadiosFromBoard();
 
             JOptionPane.showMessageDialog(this, "Partie chargée.");
         } catch (FileNotFoundException e) {
@@ -142,9 +165,22 @@ public class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    private void setPaintMode(){
-        String selectedPaintMode = (String) sidebar.mode.getSelectedItem();
-        currentBoard.paint = "Paint".equals(selectedPaintMode);
+    private void setPaintMode() {
+        if (currentBoard != null) {
+            String selectedPaintMode = (String) sidebar.mode.getSelectedItem();
+            currentBoard.paint = "Paint".equals(selectedPaintMode);
+            // Activer/désactiver les radios en mode peinture
+            boolean radiosEnabled = (currentBoard.getPlayersNumber() == 2) || currentBoard.paint || (currentBoard.getPlayersNumber() == 1);
+            sidebar.setRadiosEnabled(radiosEnabled);
+            updateRadiosFromBoard();
+        }
+    }
+
+    // Méthode publique pour mettre à jour les radios depuis le Board (appelée par le contrôleur)
+    public void updateRadiosFromBoard() {
+        if (currentBoard != null) {
+            sidebar.updateRadioSelection(currentBoard.player);
+        }
     }
 
     public static void main(String[] args) {

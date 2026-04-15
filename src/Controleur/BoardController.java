@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import Modele.Board;
 import Vue.BoardDisplay;
+import Vue.MainFrame;
 import Modele.AIType;
 
 public class BoardController extends MouseAdapter {
@@ -13,40 +14,42 @@ public class BoardController extends MouseAdapter {
     private boolean over = false;
     private AIType ai_type;
     private int depth;
+    private MainFrame mainFrame; // Référence pour mettre à jour l'UI
+    public byte humanPlayer = 1; // Par défaut l'humain est joueur 1
 
+    public void setHumanPlayer(byte p) {
+        this.humanPlayer = p;
+    }
 
-    public BoardController(Board board, BoardDisplay display, AIType ai_type, int depth) {
+    public BoardController(Board board, BoardDisplay display, AIType ai_type, int depth, MainFrame mainFrame) {
         this.board = board;
         this.display = display;
         this.ai_type = ai_type;
         this.depth = depth;
+        this.mainFrame = mainFrame;
         display.addMouseListener(this);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (over) {
-            return;
-        }
+        if (over) return;
 
         int col = e.getX() / 75;
         int row = e.getY() / 75;
-        if (col < 0 || col >= board.col) {
-            return;
-        }
+        if (col < 0 || col >= board.col) return;
 
-        //Mode peinture (ne dépend pas d'un type de partie)
-        if(board.paint){
-            if(SwingUtilities.isLeftMouseButton(e)){ //Ajouter un jeton rouge: clic gauche
-                board.addPaintToken(row,col, (byte) 1);
-            }
-            else if(SwingUtilities.isRightMouseButton(e)){ //Jeton jaune: clic droit
-                board.addPaintToken(row,col, (byte) 2);
-            }
-            else if(SwingUtilities.isMiddleMouseButton(e)){ //Effacer: clic molette
-                board.addPaintToken(row,col, (byte) 0);
+        // Mode peinture
+        if (board.paint) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                board.addPaintToken(row, col, (byte) 1);
+            } else if (SwingUtilities.isRightMouseButton(e)) {
+                board.addPaintToken(row, col, (byte) 2);
+            } else if (SwingUtilities.isMiddleMouseButton(e)) {
+                board.addPaintToken(row, col, (byte) 0);
             }
             display.repaint();
+            // Mise à jour des radios après un coup en mode peinture (le joueur change manuellement)
+            mainFrame.updateRadiosFromBoard();
             return;
         }
 
@@ -56,69 +59,70 @@ public class BoardController extends MouseAdapter {
             while (board.checkWin() == 0) {
                 int bestCol = getAIMove();
                 board.addToken(bestCol);
-                // Après chaque coup, vérifier la victoire
                 result = board.checkWin();
                 if (result != 0) {
                     over = true;
                     break;
                 }
-                // Changer de joueur manuellement
                 board.player = (byte) (board.player == 1 ? 2 : 1);
             }
             display.repaint();
-            if(over){
+            mainFrame.updateRadiosFromBoard();
+            if (over) {
                 JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
             }
             return;
         }
 
-// Gestion des tours pour 1 ou 2 joueurs
+        // Gestion des tours pour 1 ou 2 joueurs
         boolean joueurAJoue = false;
 
-
-// Cas : joueur humain peut jouer (mode 2 joueurs, ou mode 1 joueur et c'est le tour de l'humain)
-        if (board.getPlayersNumber() == 2 || (board.getPlayersNumber() == 1 && board.player == 1)) {
+        boolean isHumanTurn = (board.getPlayersNumber() == 2)
+                || (board.getPlayersNumber() == 1 && board.player == humanPlayer);
+        if (isHumanTurn) {
             board.addToken(col);
             joueurAJoue = true;
         }
 
         if (joueurAJoue) {
-            // Vérifier la victoire
-            System.out.println("Doit jouer: "+getAIMove());
             byte result = board.checkWin();
             if (result != 0) {
                 over = true;
             } else {
-                // Pas de victoire : passer au joueur suivant
                 board.player = (byte) (board.player == 1 ? 2 : 1);
             }
             display.repaint();
-            if(over){
+            mainFrame.updateRadiosFromBoard();
+            if (over) {
                 JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
             }
         }
+
         if (board.getPlayersNumber() == 1 && board.player == 2) {
             jouerTourIA();
         }
 
+        if (board.getPlayersNumber() == 1 && board.player != humanPlayer) {
+            jouerTourIA();
+        }
     }
 
-    private void jouerTourIA() {
+    // Méthode rendue publique pour être appelée depuis MainFrame
+    public void jouerTourIA() {
         if (over) return;
 
         int bestCol = getAIMove();
-        System.out.println("Doit jouer: "+bestCol);
         board.addToken(bestCol);
 
         byte result = board.checkWin();
         if (result != 0) {
             over = true;
         } else {
-            // Après le coup de l'IA, on repasse au joueur humain (ou à l'autre IA si mode 0, mais ici on est en mode 1)
             board.player = (byte) (board.player == 1 ? 2 : 1);
         }
         display.repaint();
-        if(over){
+        mainFrame.updateRadiosFromBoard();
+        if (over) {
             JOptionPane.showMessageDialog(display, "Victoire du joueur " + result + " !");
         }
     }
@@ -131,4 +135,3 @@ public class BoardController extends MouseAdapter {
         }
     }
 }
-
